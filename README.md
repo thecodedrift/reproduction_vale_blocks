@@ -11,12 +11,13 @@ rule, and four generated Markdown files.
    part-way emits zero bytes, so files that finished in milliseconds lose their
    alerts along with the slow one.
 
-Finding 2 is what makes finding 1 matter. On its own, one slow file is slow.
-Combined, one slow block can cost an entire run its output under any external
-time limit: a CI step timeout, an editor integration, a pre-commit hook.
+Finding 2 is what makes finding 1 matter. A slow file on its own is just slow.
+With no partial output, one slow block costs an entire run its findings under
+any external time limit: a CI step timeout, an editor integration, a pre-commit
+hook.
 
-`BUG-REPORT.md` is the writeup, with the equivalent plain-`sh` commands for
-anyone who would rather not run a Node script.
+`BUG-REPORT.md` is the writeup, with equivalent plain-`sh` commands for anyone
+who would rather not run a Node script.
 
 ## Running it
 
@@ -28,8 +29,8 @@ npm run bug:reproduce
 
 Budget about three minutes. `bug:reproduce` lints the 3 MB single-block file
 twice, and that file is the slow one by design. A discarded warm-up run goes
-first, because the initial exec of a 44 MB binary pays to page it in and that
-cost would otherwise land entirely on whichever measurement ran first.
+first, so the cost of paging in a 44 MB binary does not land on whichever
+measurement happens to run first.
 
 Measured on darwin/arm64, macOS 26.5.1, Apple silicon:
 
@@ -59,17 +60,17 @@ same run, killed after 5s                0 bytes in 0 chunks (signal SIGTERM)
 
 Vale arrives as an npm dependency rather than a checked-in binary or a
 `brew install` step, so the version under test is pinned in `package.json` and
-the same on every machine. The `@taskless/vale-*` packages are published from
+identical on every machine. The `@taskless/vale-*` packages are published from
 [taskless/cli](https://github.com/taskless/cli) as `@taskless/vale-<os>-<cpu>`,
 using node's own `process.platform` and `process.arch` spellings. All six are
 `optionalDependencies` with `os`/`cpu` constraints, so `npm install` fetches
-exactly the one your host can run. Prebuilt binaries exist for darwin, linux,
-and win32 on arm64 and x64; anything else has no build and `bug:reproduce` says
-so by name rather than failing obscurely.
+exactly the one your host can run. Prebuilt binaries cover darwin, linux, and
+win32 on arm64 and x64. On any other host, `bug:reproduce` names the missing
+package rather than failing obscurely.
 
 ## The controlled pair
 
-`huge.md` and `wrapped.md` are the experiment, and everything about them is held
+`huge.md` and `wrapped.md` are the experiment. Everything about them is held
 constant except the separator:
 
 | | `huge.md` | `wrapped.md` |
@@ -81,10 +82,9 @@ constant except the separator:
 | alerts | 42,500 | 42,500 |
 | time | ~78 s | ~4.4 s |
 
-If you edit the fixtures, keep that invariant. Changing the sentence, the count,
-or trimming one of the two removes the only thing that makes the comparison
-evidence rather than an anecdote — the equal alert counts are what rule out
-"one file simply had more work to do".
+If you edit the fixtures, keep that invariant. Change the sentence, change the
+count, or trim one of the two, and the comparison is no longer evidence. The
+equal alert counts are what rule out "one file simply had more work to do".
 
 ## Expected behaviour
 
