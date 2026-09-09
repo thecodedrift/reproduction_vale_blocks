@@ -1,0 +1,7 @@
+extends: existence
+message: "Avoid hedging: '%s'"
+level: warning
+ignorecase: true
+tokens:
+  - simply
+  - basically

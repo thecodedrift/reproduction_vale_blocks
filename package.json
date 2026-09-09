@@ -1,0 +1,23 @@
+{
+  "name": "vale-block-size-repro",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Reproduction for two Vale defects: lint cost is superlinear in single-block size, and no output is emitted until the whole run finishes",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "fixture:create": "node scripts/create-fixtures.mjs",
+    "bug:reproduce": "node scripts/reproduce.mjs",
+    "vale:version": "node scripts/vale-binary.mjs"
+  },
+  "optionalDependencies": {
+    "@taskless/vale-darwin-arm64": "3.20.0-20260907164938",
+    "@taskless/vale-darwin-x64": "3.20.0-20260907164938",
+    "@taskless/vale-linux-arm64": "3.20.0-20260907164938",
+    "@taskless/vale-linux-x64": "3.20.0-20260907164938",
+    "@taskless/vale-win32-arm64": "3.20.0-20260907164938",
+    "@taskless/vale-win32-x64": "3.20.0-20260907164938"
+  }
+}
