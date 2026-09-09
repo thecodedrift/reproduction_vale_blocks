@@ -3,14 +3,13 @@ import { mkdirSync, statSync, writeFileSync } from "node:fs";
 import { FIXTURE_DIR, FIXTURES, REPEAT, SENTENCE } from "./fixtures.mjs";
 
 /**
- * Build the four fixtures.
+ * Build a large fixture: the shared sentence repeated `REPEAT` times, joined by
+ * `separator`.
  *
- * `huge.md` and `wrapped.md` are the controlled pair, and the control is the
- * whole point: same sentence, same repeat count, same resulting alert count.
- * The only difference is the separator — a space keeps the 3 MB as ONE
- * Markdown block, a blank line splits it into 42,500 small ones. Anything that
- * makes them differ in another way (a different sentence, a different count,
- * trimming one of them) destroys the comparison this repository exists to make.
+ * A space keeps the whole 3 MB as ONE Markdown block; a blank line splits it
+ * into 42,500 small ones. That separator is the only thing `huge.md` and
+ * `wrapped.md` may differ in. See "The controlled pair" in the README before
+ * changing the sentence, the count, or either fixture.
  */
 function build(separator) {
   return `# Heading\n\n${new Array(REPEAT).fill(SENTENCE).join(separator)}\n`;

@@ -5,8 +5,7 @@ export const FIXTURE_DIR = "fixtures";
 
 /**
  * One sentence, carrying exactly one match for the `Repro.Hedging` rule
- * ("simply"). Both large fixtures repeat it the same number of times, so they
- * produce the same alert count and differ only in block structure.
+ * ("simply"). Both large fixtures repeat it the same number of times.
  */
 export const SENTENCE =
   "This is simply a sentence of prose that a writer might reasonably produce.";

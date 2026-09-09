@@ -8,14 +8,14 @@ const require = createRequire(import.meta.url);
  *
  * The `@taskless/vale-*` packages are named `@taskless/vale-<os>-<cpu>` using
  * node's own `process.platform` / `process.arch` spellings, and ship the
- * binary as pure payload: no `bin` entry, no lifecycle script, no `exports`
- * field. So the path is resolved through the package's `package.json` and
- * joined, rather than looked up as a command.
+ * binary as payload only: no `bin` entry, no lifecycle script, no `exports`
+ * field. The path is therefore resolved through the package's `package.json`
+ * and joined, not looked up as a command.
  *
- * They are `optionalDependencies` with `os`/`cpu` constraints, which is what
- * makes `npm install` fetch exactly one of the six. A host npm has no build
- * for therefore fails here rather than at install time, which is the reason
- * this throws with the package name instead of returning undefined.
+ * They are `optionalDependencies` with `os`/`cpu` constraints, so `npm install`
+ * fetches exactly one of the six. A host with no build fails here rather than
+ * at install time, so this throws with the package name instead of returning
+ * undefined.
  */
 export function valeBinaryPath() {
   const pkg = `@taskless/vale-${process.platform}-${process.arch}`;

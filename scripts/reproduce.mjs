@@ -13,7 +13,7 @@ const INTERRUPT_MS = 5_000;
  * Run Vale over `paths` to completion, returning elapsed wall time, the bytes
  * of stdout, and the parsed alert counts.
  *
- * `--no-exit` keeps a nonzero exit from found alerts out of the way; it is not
+ * `--no-exit` keeps a nonzero exit from found alerts out of the way. It is not
  * required to reproduce either defect.
  */
 function runToCompletion(paths) {
@@ -32,8 +32,8 @@ function runToCompletion(paths) {
           Object.entries(parsed).map(([file, list]) => [file, list.length])
         );
       } catch {
-        // Left empty: an unparseable body is itself the observation in the
-        // interrupt case, and callers there read `bytes` rather than `alerts`.
+        // Empty on purpose: in the interrupt case an unparseable body is the
+        // observation, and the caller reads `bytes` instead of `alerts`.
       }
       resolve({ ms: Math.round(ms), bytes: Buffer.byteLength(stdout), alerts });
     });
@@ -44,8 +44,8 @@ function runToCompletion(paths) {
  * Start Vale, kill it after `INTERRUPT_MS`, and report how many bytes it had
  * written by then.
  *
- * The bytes are counted from the stream as they arrive rather than from a file
- * afterwards, so the result cannot be confused with a file that was written and
+ * Bytes are counted off the stream as they arrive, not read from a file
+ * afterwards, so the result cannot be mistaken for a file that was written and
  * then truncated. Nothing arrives at all.
  */
 function runInterrupted(paths) {
@@ -76,10 +76,9 @@ if (missing.length > 0) {
 console.log(`vale binary: ${BINARY}`);
 console.log(`platform:    ${process.platform}/${process.arch}`);
 
-// A throwaway run first. The very first exec of a 44 MB binary pays to page it
-// in, which lands entirely on whichever measurement happens to go first and
-// inflated the small-file figure from ~30 ms to ~950 ms. Every number below is
-// therefore steady-state, which is also the state a repeated CI run measures.
+// A throwaway run first. The first exec of a 44 MB binary pays to page it in,
+// which inflated the small-file figure from ~30 ms to ~950 ms. Every number
+// below is steady-state, the state a repeated CI run measures.
 await runToCompletion([FIXTURES.smallA]);
 console.log("(warm-up run discarded)\n");
 
