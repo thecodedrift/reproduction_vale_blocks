@@ -6,7 +6,7 @@
 
 ## Summary
 
-Two findings, the second of which turns the first from "slow" into "silent".
+Two findings. The second turns the first from slow into silent.
 
 1. Lint time scales with the size of a single Markdown **block**, not with file
    size. A 3 MB file written as one block takes **80.7 s**; the same sentences,
@@ -17,16 +17,16 @@ Two findings, the second of which turns the first from "slow" into "silent".
    milliseconds are lost along with the slow one. This holds for
    `--output=JSON`, `--output=line`, and the default CLI output.
 
-Together these mean one large file does not merely delay a run, it can cost the
-entire run its findings under any external time limit (CI step timeout, editor
-integration, pre-commit hook).
+Under any external time limit (CI step timeout, editor integration,
+pre-commit hook), one large file costs the whole run its findings, not just its
+own.
 
 ## Reproduction
 
 The commands below are self-contained plain `sh`. This repository also runs the
 same experiment through `npm run fixture:create` and `npm run bug:reproduce`,
-which pin the Vale version via npm rather than relying on whichever build is on
-your PATH.
+which pin the Vale version via npm instead of using whichever build is on your
+PATH.
 
 ### Config
 
@@ -125,7 +125,7 @@ $ time vale --output=JSON --no-exit wrapped.md   #  4242 ms, 42500 alerts
 `wrapped.md` is 42 KB larger and 19x faster. The only difference is where the
 blank lines are.
 
-Sweeping one block upward, cost grows faster than linearly in block size
+Growing a single block, cost rises faster than linearly in block size
 (equivalent generated content, single file per run):
 
 | single block | time    |
@@ -135,7 +135,7 @@ Sweeping one block upward, cost grows faster than linearly in block size
 | 512 KB       | 2060 ms |
 | 3 MB         | ~80 s   |
 
-The same byte totals split into ordinary paragraphs stay close to linear:
+Split into ordinary paragraphs, the same byte totals stay close to linear:
 128 KB 42 ms, 256 KB 67 ms, 512 KB 158 ms, 1 MB 485 ms, 3 MB 3855 ms.
 
 ### Nothing is emitted until the whole run finishes
@@ -152,8 +152,8 @@ $ wc -c out.json
 ```
 
 Zero bytes. The two small files were linted in the first few milliseconds and
-their alerts are lost with the run. Same result for `--output=line` and for the
-default CLI output, so this is the reporting phase rather than the JSON writer.
+their alerts go with the run. `--output=line` and the default CLI output behave
+the same way, so the reporting phase is responsible, not the JSON writer.
 
 ## Expected
 
@@ -165,7 +165,7 @@ Some output. Either of these independently addresses it:
 
 ## Notes
 
-- `--no-exit` is used so a nonzero exit from found alerts does not mask the
-  behaviour; it is not required to reproduce.
-- Alert counts are equal across the two 3 MB files, so the difference is not
-  explained by differing amounts of work.
+- `--no-exit` keeps a nonzero exit from found alerts out of the way. It is not
+  required to reproduce either finding.
+- Alert counts are equal across the two 3 MB files, so differing amounts of
+  work do not explain the gap.
