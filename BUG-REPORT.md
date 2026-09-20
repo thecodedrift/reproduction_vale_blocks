@@ -1,6 +1,6 @@
 # Lint time is superlinear in the size of a single block, and no output is emitted until every file finishes
 
-**Vale version:** 3.20.0
+**Vale version:** 3.20.0 (resolved in 3.21.0, see README)
 **Platform:** darwin/arm64, macOS 26.5.1 (Apple silicon)
 **Config:** the `.vale.ini` and one-rule style below; no other styles installed
 

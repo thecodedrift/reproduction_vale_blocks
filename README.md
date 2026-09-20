@@ -1,7 +1,17 @@
 # Vale block-size reproduction
 
+> **Resolved as of Vale 3.21.0.** Re-running this reproduction against
+> `@taskless/vale-*@3.21.0-20260915061224` brings the single-block file from
+> ~81 s to ~230 ms, in line with the many-block file, and cost now scales
+> linearly with block size. Finding 2 (no partial output) is unchanged, but it
+> only caused damage in combination with finding 1 and is larger in scope than
+> [taskless/cli#325](https://github.com/taskless/cli/issues/325). This
+> repository is archived with that issue considered fixed for Vale 3.21+.
+
 Two defects in [Vale](https://vale.sh) 3.20.0, reproduced with one config, one
-rule, and four generated Markdown files.
+rule, and four generated Markdown files. The pinned version is now 3.21.0, so
+`npm run bug:reproduce` shows the fixed behaviour; the 3.20.0 numbers below are
+kept for the record.
 
 1. **Lint cost tracks the size of a single Markdown block, not the size of the
    file.** 3 MB written as one block takes ~80 s. The same sentences, same
@@ -32,7 +42,7 @@ twice, and that file is the slow one by design. A discarded warm-up run goes
 first, so the cost of paging in a 44 MB binary does not land on whichever
 measurement happens to run first.
 
-Measured on darwin/arm64, macOS 26.5.1, Apple silicon:
+Measured on darwin/arm64, macOS 26.5.1, Apple silicon, against Vale 3.20.0:
 
 ```
 ## Finding 1 — cost tracks single-block size, not file size
@@ -46,6 +56,28 @@ wrapped.md (many blocks)          4415 ms   42,500 alerts
 small + small + huge, to completion     81345 ms
 same run, killed after 5s                0 bytes in 0 chunks (signal SIGTERM)
 ```
+
+The same run against Vale 3.21.0, same machine:
+
+```
+## Finding 1 — cost tracks single-block size, not file size
+
+the two small files alone            7 ms
+huge.md    (one block)             231 ms   42,500 alerts
+wrapped.md (many blocks)           270 ms   42,500 alerts
+
+## Finding 2 — nothing is written until the whole run finishes
+
+small + small + huge, to completion       212 ms
+same run, killed after 5s          15058650 bytes in 230 chunks (signal null)
+```
+
+On 3.21.0 the whole run finishes long before the 5 s kill, so the finding 2
+line above no longer measures an interrupt. Repeating it with a 25 MB
+single-block file (a ~1.7 s run, killed at 670 ms) still produced 0 bytes, for
+both `--output=JSON` and the default line output, and the first stdout byte of
+the uninterrupted run arrived in its final ~30 ms. Finding 2 stands, but with
+finding 1 gone there is no longer a slow block for a timeout to land on.
 
 ## How it is put together
 
@@ -73,14 +105,18 @@ package rather than failing obscurely.
 `huge.md` and `wrapped.md` are the experiment. Everything about them is held
 constant except the separator:
 
-| | `huge.md` | `wrapped.md` |
-| --- | --- | --- |
-| sentence | identical | identical |
-| repetitions | 42,500 | 42,500 |
-| separator | `" "` | `"\n\n"` |
-| bytes | 3,187,511 | 3,230,010 |
-| alerts | 42,500 | 42,500 |
-| time | ~78 s | ~4.4 s |
+| | `huge.md` | `wrapped.md` | `huge.md` (3.21.0) | `wrapped.md` (3.21.0) |
+| --- | --- | --- | --- | --- |
+| sentence | identical | identical | identical | identical |
+| repetitions | 42,500 | 42,500 | 42,500 | 42,500 |
+| separator | `" "` | `"\n\n"` | `" "` | `"\n\n"` |
+| bytes | 3,187,511 | 3,230,010 | 3,187,511 | 3,230,010 |
+| alerts | 42,500 | 42,500 | 42,500 | 42,500 |
+| time | ~78 s | ~4.4 s | ~230 ms | ~270 ms |
+
+Scaling the single block on 3.21.0 confirms the fix is not a threshold effect:
+85,000 sentences (6.3 MB) took 436 ms, 170,000 (12.6 MB) took 853 ms, and
+340,000 (25.2 MB) took 1,763 ms, roughly doubling with size.
 
 If you edit the fixtures, keep that invariant. Change the sentence, change the
 count, or trim one of the two, and the comparison is no longer evidence. The
